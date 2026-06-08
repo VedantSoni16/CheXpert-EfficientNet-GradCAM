@@ -28,7 +28,7 @@ def load_model_and_cam():
     
     # Load weights
     try:
-        model.load_state_dict(torch.load("best_model.pth", map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load("src/best_model.pth", map_location=torch.device('cpu')))
     except Exception as e:
         st.error(f"Failed to load weights. Ensure 'best_model.pth' is in the src folder. Error: {e}")
         return None, None
