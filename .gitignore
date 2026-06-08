@@ -1,0 +1,14 @@
+# Local Python environments & caching
+__pycache__/
+*.pyc
+.streamlit/
+.ipynb_checkpoints/
+
+# Trained weights or massive files if they exceed 100MB (Your EfficientNet-B0 is ~20MB, so it's safe to track, but exclude temporary copies)
+temp_upload.jpg
+
+# Massive Dataset Folders - Adjust the path to match your local data directory
+data/
+CheXpert-v1.0-small/
+*.zip
+*.tar.gz
