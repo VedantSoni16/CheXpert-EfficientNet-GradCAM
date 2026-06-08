@@ -1,41 +1,69 @@
 # Explainable X-Ray AI: Pleural Effusion Diagnostic Assistant
 
-A production-ready, deep learning application that identifies **Pleural Effusion** from frontal chest X-rays using an optimized **EfficientNet-B0** architecture. The system features an in-memory **Grad-CAM (Gradient-weighted Class Activation Mapping)** layer to provide clinically explainable visual heatmaps, deployed as an interactive web dashboard via Streamlit.
+A deep learning application that detects **Pleural Effusion** from frontal chest X-rays using **EfficientNet-B0 Transfer Learning**. The system combines high-performing medical image classification with **Grad-CAM visual explanations**, enabling users to understand which regions of an X-ray influenced the model's prediction. The model is deployed through an interactive **Streamlit dashboard** for real-time inference and visualization.
 
 ---
 
 ## 🚀 Key Features
 
-- **Two-Stage Training Pipeline:** Implemented freezing/unfreezing schedules to maximize transfer learning efficiency on specialized medical imagery.
+### Transfer Learning with EfficientNet-B0
+- Leveraged a pretrained EfficientNet-B0 backbone for medical image classification.
+- Implemented a two-stage training strategy using layer freezing and fine-tuning.
+- Optimized for improved convergence on specialized chest X-ray data.
 
-- **Visual Interpretability:** Integrated Grad-CAM to highlight localized pathological features, tackling the deep learning "black box" dilemma in healthcare.
+### Explainable AI with Grad-CAM
+- Integrated Grad-CAM heatmap generation for visual model interpretability.
+- Highlights image regions contributing most strongly to the prediction.
+- Helps address the black-box nature of deep learning models in healthcare applications.
 
-- **In-Memory Optimization:** Reconstructed the web app to process inputs entirely via memory arrays (`PIL` / `NumPy`), preventing server-side I/O bottlenecks.
+### Streamlit Deployment
+- Built an interactive web application for image upload and inference.
+- Generates predictions and Grad-CAM visualizations in real time.
+- Designed an in-memory processing pipeline using PIL and NumPy for efficient execution.
 
-- **Imbalance Mitigation:** Calculated and applied custom loss penalties (`pos_weight = 1.48`) to compensate for medical class distributions.
+### Class Imbalance Handling
+- Applied weighted binary classification loss using a custom positive class weight.
+- Improved robustness on naturally imbalanced medical datasets.
 
 ---
 
-## 📊 Dataset & Performance
+## 📊 Dataset
 
-The model was trained on a highly filtered subset of the **Stanford CheXpert dataset**, focusing exclusively on **Frontal Views** to align with standard clinical diagnostic workflows.
+The model was trained on a filtered subset of the **Stanford CheXpert Dataset**, focusing exclusively on **Frontal Chest X-Rays** to match common clinical workflows.
 
-- **Training Set:** 114,616 Images (~40.3% Positive Class)
-- **Validation Set:** 202 Images (Gold-standard panel annotated by 3 board-certified Stanford radiologists)
+| Dataset Split | Size |
+|--------------|------|
+| Training | 114,616 Images |
+| Validation | 202 Images |
+| Positive Class Ratio | ~40.3% |
 
-### Training History & Validation Results
+The validation dataset consists of expert-labeled studies annotated by Stanford radiologists, providing a high-quality benchmark for evaluation.
 
-The training sequence utilized Binary Cross-Entropy with Logits Loss paired with the Adam optimizer (`LR = 1e-4`) during fine-tuning.
+---
 
-| Stage | Epoch | Train Loss | Val Loss | Val AUC-ROC | Status |
-|---------|---------|---------|---------|---------|---------|
-| **Stage 1 (Frozen Backbone)** | 1 | 0.7367 | 0.5981 | 0.8332 | Initialized |
-| **Stage 1 (Frozen Backbone)** | 2 | 0.7244 | 0.6109 | 0.8137 | Stagnant |
-| **Stage 2 (Fine-Tuning)** | 1 | 0.5999 | 0.4216 | 0.9249 | Checkpointed |
-| **Stage 2 (Fine-Tuning)** | 2 | 0.5496 | 0.3915 | **0.9338** | **Best Weights Saved** |
-| **Stage 2 (Fine-Tuning)** | 3 | 0.5287 | 0.3954 | 0.9307 | Early Overfitting Sign |
+## 📈 Model Performance
 
-*The checkpoint configuration automatically preserved the highest-performing model from Epoch 2 (Validation AUC-ROC = 0.9338).*
+The training pipeline used transfer learning with EfficientNet-B0, Binary Cross-Entropy Loss, and the Adam optimizer.
+
+| Stage | Epoch | Train Loss | Validation Loss | Validation AUC-ROC |
+|---------|---------|---------|---------|---------|
+| Frozen Backbone | 1 | 0.7367 | 0.5981 | 0.8332 |
+| Frozen Backbone | 2 | 0.7244 | 0.6109 | 0.8137 |
+| Fine-Tuning | 1 | 0.5999 | 0.4216 | 0.9249 |
+| Fine-Tuning | 2 | 0.5496 | 0.3915 | **0.9338** |
+| Fine-Tuning | 3 | 0.5287 | 0.3954 | 0.9307 |
+
+### Final Results
+
+✅ Best Validation AUC-ROC: **0.9338**
+
+✅ Transfer Learning + Fine-Tuning Strategy
+
+✅ Explainable Predictions using Grad-CAM
+
+✅ Interactive Streamlit Deployment
+
+The best-performing model checkpoint was automatically saved based on validation AUC-ROC and achieved strong discriminative performance on the expert-annotated validation set.
 
 ---
 
@@ -44,74 +72,26 @@ The training sequence utilized Binary Cross-Entropy with Logits Loss paired with
 ```text
 CNN-GRAD/
 ├── src/
-│   ├── app.py             # Streamlit Interactive Dashboard
-│   ├── model.py           # EfficientNet-B0 Architecture Definitions
-│   ├── gradcam.py         # Gradient Hook Extractor & Heatmap Generation
-│   ├── dataset.py         # CheXpert Parsing and Augmentation Pipeline
+│   ├── app.py             # Streamlit Dashboard
+│   ├── model.py           # EfficientNet-B0 Model Definition
+│   ├── gradcam.py         # Grad-CAM Heatmap Generation
+│   ├── dataset.py         # Data Processing Pipeline
 │   └── best_model.pth     # Best Saved Model Weights
 ├── requirements.txt
 └── README.md
-💻 Local Installation & Setup
-1. Clone the Repository
+💻 Local Installation
+Clone Repository
 git clone https://github.com/VedantSoni16/CheXpert-EfficientNet-GradCAM.git
 cd CheXpert-EfficientNet-GradCAM
-2. Install Dependencies
+Install Dependencies
 pip install -r requirements.txt
-3. Run the Dashboard
+Launch Application
 streamlit run src/app.py
-🔬 Mathematical Breakdown: Grad-CAM Explainability
-
-The explainability layer targets the final convolutional feature maps A
-k
- produced by the EfficientNet backbone.
-
-Gradients of the output logit Y with respect to each feature map are globally averaged across the spatial dimensions (U×V) to compute feature importance weights:
-
-α
-k
-	​
-
-=
-U×V
-1
-	​
-
-i=1
-∑
-U
-	​
-
-j=1
-∑
-V
-	​
-
-∂A
-i,j
-k
-	​
-
-∂Y
-	​
-
-
-The Grad-CAM localization map is then generated as:
-
-L
-Grad−CAM
-	​
-
-=ReLU(
-k
-∑
-	​
-
-α
-k
-	​
-
-A
-k
-)
-
-The ReLU operation removes negative contributions, ensuring that only features positively associated with Pleural Effusion are visualized.
+🎯 Example Workflow
+Upload a frontal chest X-ray image.
+The EfficientNet-B0 model generates a Pleural Effusion probability score.
+Grad-CAM identifies the regions influencing the prediction.
+The Streamlit dashboard displays:
+Prediction Confidence
+Classification Result
+Explainability Heatmap Overlay
