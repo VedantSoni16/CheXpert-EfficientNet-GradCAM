@@ -79,19 +79,27 @@ CNN-GRAD/
 │   └── best_model.pth     # Best Saved Model Weights
 ├── requirements.txt
 └── README.md
-💻 Local Installation
-Clone Repository
+```
+
+---
+
+## 💻 Local Installation
+
+### Clone Repository
+
+```bash
 git clone https://github.com/VedantSoni16/CheXpert-EfficientNet-GradCAM.git
 cd CheXpert-EfficientNet-GradCAM
-Install Dependencies
+```
+
+### Install Dependencies
+
+```bash
 pip install -r requirements.txt
-Launch Application
+```
+
+### Launch Application
+
+```bash
 streamlit run src/app.py
-🎯 Example Workflow
-Upload a frontal chest X-ray image.
-The EfficientNet-B0 model generates a Pleural Effusion probability score.
-Grad-CAM identifies the regions influencing the prediction.
-The Streamlit dashboard displays:
-Prediction Confidence
-Classification Result
-Explainability Heatmap Overlay
+```
